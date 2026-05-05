@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Meal Planner — NutriPlan{% endblock %}
+{% block extra_style %}
+<style>
+  .pl-hero{background:var(--g900);color:#fff;padding:2.5rem 2rem;text-align:center;}
+  .pl-hero h1{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem;}
+  .pl-hero p{color:rgba(255,255,255,0.55);font-size:0.9rem;}
+  .sum-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+  .sum-c{background:var(--white);border:1px solid var(--sand3);border-radius:12px;padding:1rem;text-align:center;}
+  .sum-n{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--g600);}
+  .sum-l{font-size:0.73rem;color:var(--light);margin-top:2px;}
+  .plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.1rem;}
+  .day-card{background:var(--white);border:1px solid var(--sand3);border-radius:var(--r);overflow:hidden;}
+  .day-hd{background:var(--g50);padding:0.75rem 1.1rem;font-weight:600;font-size:0.88rem;color:var(--g800);border-bottom:1px solid var(--g100);display:flex;justify-content:space-between;align-items:center;}
+  .day-total{font-size:0.76rem;color:var(--g600);}
+  .meal-row{padding:0.75rem 1.1rem;border-bottom:1px solid var(--sand2);display:flex;align-items:center;gap:10px;}
+  .meal-row:last-child{border-bottom:none;}
+  .mr-e{font-size:1.15rem;}
+  .mr-i{flex:1;}
+  .mr-n{font-size:0.83rem;font-weight:500;}
+  .mr-c{font-size:0.72rem;color:var(--light);}
+  .mr-t{font-size:0.68rem;font-weight:600;color:var(--light);}
+</style>
+{% endblock %}
+{% block content %}
+<div class="pl-hero">
+  <h1>📅 Weekly Meal Planner</h1>
+  <p>Auto-generated healthy meal plans for an entire week</p>
+</div>
+<div class="page">
+  <div class="sum-row">
+    <div class="sum-c"><div class="sum-n" id="avg-cal">—</div><div class="sum-l">Avg Daily Calories</div></div>
+    <div class="sum-c"><div class="sum-n" id="avg-pro">—</div><div class="sum-l">Avg Daily Protein</div></div>
+    <div class="sum-c"><div class="sum-n">7</div><div class="sum-l">Days Planned</div></div>
+    <div class="sum-c"><div class="sum-n">4</div><div class="sum-l">Meals Per Day</div></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;">This Week's Plan</h2>
+    <button class="btn btn-primary" onclick="generate()">🔄 Regenerate</button>
+  </div>
+  <div class="plan-grid" id="plan-grid"></div>
+</div>
+<script>
+const db={{ meal_database|tojson }};
+const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const types=['breakfast','lunch','dinner','snack'];
+const icons={breakfast:'🌅',lunch:'☀️',dinner:'🌙',snack:'🍎'};
+function rand(a){return a[Math.floor(Math.random()*a.length)];}
+function generate(){
+  let tc=0,tp=0;
+  document.getElementById('plan-grid').innerHTML=days.map(d=>{
+    let dc=0,dp=0;
+    const rows=types.map(t=>{
+      const m=rand(db[t]);dc+=m.calories;dp+=m.protein;
+      return `<div class="meal-row"><span class="mr-e">${m.emoji}</span><div class="mr-i"><div class="mr-n">${m.name}</div><div class="mr-c">${m.calories} kcal · ${m.protein}g protein</div></div><span class="mr-t">${icons[t]}</span></div>`;
+    }).join('');
+    tc+=dc;tp+=dp;
+    return `<div class="day-card"><div class="day-hd"><span>${d}</span><span class="day-total">${dc} kcal</span></div>${rows}</div>`;
+  }).join('');
+  document.getElementById('avg-cal').textContent=Math.round(tc/7);
+  document.getElementById('avg-pro').textContent=Math.round(tp/7)+'g';
+}
+generate();
+</script>
+{% endblock %}

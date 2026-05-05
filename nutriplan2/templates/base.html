@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>{% block title %}NutriPlan{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --g50: #f2faf6; --g100: #d4f0e1; --g200: #a8e0c3; --g400: #4caf82;
+      --g600: #27845a; --g800: #164f37; --g900: #0d3224;
+      --sand: #faf8f4; --sand2: #f0ece3; --sand3: #e0d9cc;
+      --text: #18180f; --mid: #4a4a38; --light: #8c8c76;
+      --white: #ffffff; --r: 16px; --rs: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Outfit',sans-serif; background:var(--sand); color:var(--text); min-height:100vh; }
+
+    /* NAV */
+    nav {
+      background:var(--white);
+      border-bottom:1px solid var(--sand3);
+      padding:0 2rem;
+      display:flex; align-items:center; justify-content:space-between;
+      height:66px; position:sticky; top:0; z-index:200;
+    }
+    .logo { font-family:'Playfair Display',serif; font-size:1.45rem; color:var(--g600); text-decoration:none; display:flex; align-items:center; gap:8px; }
+    .logo b { color:var(--text); font-weight:700; }
+    .nav-links { display:flex; gap:1.8rem; list-style:none; }
+    .nav-links a { text-decoration:none; color:var(--mid); font-size:0.88rem; font-weight:500; transition:color 0.2s; }
+    .nav-links a:hover,.nav-links a.active { color:var(--g600); }
+    .nav-right { display:flex; align-items:center; gap:0.8rem; }
+    .nav-user { font-size:0.85rem; color:var(--mid); font-weight:500; }
+    .nav-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:var(--g100); color:var(--g800);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.85rem; font-weight:600;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:0.55rem 1.3rem; border-radius:50px;
+      font-family:'Outfit',sans-serif; font-size:0.88rem; font-weight:500;
+      cursor:pointer; text-decoration:none; border:none; transition:all 0.2s;
+    }
+    .btn-primary { background:var(--g600); color:#fff; }
+    .btn-primary:hover { background:var(--g800); transform:translateY(-1px); }
+    .btn-outline { background:transparent; color:var(--g600); border:1.5px solid var(--g400); }
+    .btn-outline:hover { background:var(--g50); }
+    .btn-sm { padding:0.4rem 1rem; font-size:0.8rem; }
+    .btn-danger { background:#fde8e8; color:#c0392b; border:none; }
+    .btn-danger:hover { background:#f8c8c8; }
+
+    /* CARDS */
+    .card { background:var(--white); border-radius:var(--r); border:1px solid var(--sand3); padding:1.5rem; }
+    .card-title { font-weight:600; font-size:0.95rem; margin-bottom:1rem; display:flex; align-items:center; gap:6px; }
+
+    /* PAGE */
+    .page { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; }
+
+    /* FORM */
+    .form-group { margin-bottom:1.2rem; }
+    .form-group label { display:block; font-size:0.82rem; font-weight:500; color:var(--mid); margin-bottom:5px; }
+    .form-group input, .form-group select {
+      width:100%; padding:0.7rem 1rem;
+      border:1.5px solid var(--sand3); border-radius:var(--rs);
+      font-family:'Outfit',sans-serif; font-size:0.92rem;
+      background:var(--sand); outline:none; transition:border-color 0.2s, background 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color:var(--g400); background:var(--white); }
+
+    /* TOAST */
+    .toast {
+      position:fixed; bottom:2rem; right:2rem;
+      background:var(--g800); color:#fff;
+      padding:0.75rem 1.4rem; border-radius:12px;
+      font-size:0.88rem; font-weight:500; z-index:999;
+      opacity:0; transform:translateY(8px); transition:all 0.3s;
+      pointer-events:none;
+    }
+    .toast.show { opacity:1; transform:translateY(0); }
+
+    /* TAGS */
+    .tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; }
+    .tag-green { background:var(--g100); color:var(--g800); }
+    .tag-amber { background:#fff3d0; color:#7a5500; }
+    .tag-red { background:#fde8e8; color:#a32d2d; }
+  </style>
+  {% block extra_style %}{% endblock %}
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">🌿 Nutri<b>Plan</b></a>
+  {% if session.get('user_id') %}
+  <ul class="nav-links">
+    <li><a href="/dashboard" {% if request.path=='/dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+    <li><a href="/meal-planner" {% if request.path=='/meal-planner' %}class="active"{% endif %}>Meal Planner</a></li>
+    <li><a href="/bmi-calculator" {% if request.path=='/bmi-calculator' %}class="active"{% endif %}>BMI</a></li>
+    <li><a href="/profile" {% if request.path=='/profile' %}class="active"{% endif %}>Profile</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-avatar">{{ session.get('user_name','?')[0].upper() }}</div>
+    <span class="nav-user">{{ session.get('user_name','') }}</span>
+    <a href="/logout" class="btn btn-sm" style="background:var(--sand2);color:var(--mid);">Log out</a>
+  </div>
+  {% else %}
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/login" class="btn btn-outline btn-sm">Log in</a>
+    <a href="/signup" class="btn btn-primary btn-sm">Sign up free</a>
+  </div>
+  {% endif %}
+</nav>
+
+{% block content %}{% endblock %}
+
+<div class="toast" id="toast"></div>
+<script>
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='error'?'#c0392b':'var(--g800)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+{% block extra_script %}{% endblock %}
+</body>
+</html>

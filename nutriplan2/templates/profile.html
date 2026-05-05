@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}My Profile — NutriPlan{% endblock %}
+{% block extra_style %}
+<style>
+  .profile-hero{background:var(--g900);color:#fff;padding:2.5rem 2rem 3.5rem;}
+  .ph-inner{max-width:1100px;margin:0 auto;padding:0 0.5rem;display:flex;align-items:center;gap:1.5rem;}
+  .avatar-big{width:72px;height:72px;border-radius:50%;background:var(--g600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;font-family:'Playfair Display',serif;flex-shrink:0;}
+  .ph-info h1{font-family:'Playfair Display',serif;font-size:1.7rem;margin-bottom:0.2rem;}
+  .ph-info p{color:rgba(255,255,255,0.55);font-size:0.85rem;}
+
+  .profile-body{max-width:1100px;margin:-1.5rem auto 0;padding:0 1.5rem 3rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem;}
+  .info-cell{background:var(--sand);border-radius:10px;padding:0.9rem 1rem;}
+  .info-cell .lbl{font-size:0.73rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--light);margin-bottom:3px;}
+  .info-cell .val{font-size:1rem;font-weight:500;}
+
+  .history-row{display:flex;align-items:center;gap:12px;padding:0.7rem 0;border-bottom:1px solid var(--sand2);}
+  .history-row:last-child{border-bottom:none;}
+  .hr-date{font-size:0.82rem;font-weight:500;min-width:90px;}
+  .hr-bar{flex:1;background:var(--sand2);border-radius:6px;height:7px;overflow:hidden;}
+  .hr-fill{height:100%;border-radius:6px;background:var(--g400);}
+  .hr-cal{font-size:0.82rem;color:var(--light);min-width:60px;text-align:right;}
+
+  .edit-form input,.edit-form select{
+    width:100%;padding:0.62rem 0.9rem;border:1.5px solid var(--sand3);border-radius:8px;
+    font-family:'Outfit',sans-serif;font-size:0.88rem;margin-bottom:0.7rem;
+    outline:none;background:var(--sand);transition:border-color 0.2s;
+  }
+  .edit-form input:focus,.edit-form select:focus{border-color:var(--g400);background:var(--white);}
+  .edit-form label{font-size:0.78rem;font-weight:500;color:var(--mid);display:block;margin-bottom:3px;}
+  .edit-2col{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;}
+
+  .stat-big{text-align:center;padding:1rem;background:var(--g50);border-radius:12px;}
+  .stat-big .n{font-family:'Playfair Display',serif;font-size:2rem;color:var(--g600);}
+  .stat-big .l{font-size:0.75rem;color:var(--light);}
+  .stats-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;margin-bottom:1.2rem;}
+
+  @media(max-width:700px){.profile-body{grid-template-columns:1fr;}.info-grid{grid-template-columns:1fr 1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-hero">
+  <div class="ph-inner">
+    <div class="avatar-big">{{ user.name[0].upper() }}</div>
+    <div class="ph-info">
+      <h1>{{ user.name }}</h1>
+      <p>{{ user.email }} · Member since {{ user.created_at[:10] }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="profile-body">
+  <div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">📊 My Stats</div>
+      <div class="stats-3">
+        <div class="stat-big"><div class="n">{{ total_meals }}</div><div class="l">Meals Logged</div></div>
+        <div class="stat-big"><div class="n">{{ user.calorie_goal }}</div><div class="l">Cal Goal</div></div>
+        <div class="stat-big"><div class="n">{{ user.protein_goal }}g</div><div class="l">Protein Goal</div></div>
+      </div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="lbl">Weight</div><div class="val">{{ user.weight }} kg</div></div>
+        <div class="info-cell"><div class="lbl">Height</div><div class="val">{{ user.height }} cm</div></div>
+        <div class="info-cell"><div class="lbl">Age</div><div class="val">{{ user.age }} yrs</div></div>
+        <div class="info-cell"><div class="lbl">Gender</div><div class="val">{{ user.gender|capitalize }}</div></div>
+      </div>
+      <a href="/bmi-calculator" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:0.5rem">⚖️ Calculate My BMI</a>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📅 Calorie History (Last 7 Days)</div>
+      {% if logs %}
+        {% set max_cal = logs|map(attribute='total_cal')|max %}
+        {% for log in logs %}
+        <div class="history-row">
+          <div class="hr-date">{{ log.log_date }}</div>
+          <div class="hr-bar"><div class="hr-fill" style="width:{{ ((log.total_cal/max_cal)*100)|int }}%"></div></div>
+          <div class="hr-cal">{{ log.total_cal }} kcal</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:2rem;color:var(--light);">
+          <div style="font-size:2rem">📊</div>
+          <p style="margin-top:0.5rem;font-size:0.88rem">No history yet. Start logging meals!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-title">✏️ Edit Profile</div>
+      <div class="edit-form">
+        <label>Full Name</label>
+        <input type="text" id="ep-name" value="{{ user.name }}"/>
+        <label>Email</label>
+        <input type="email" id="ep-email" value="{{ user.email }}" disabled style="opacity:0.6;cursor:not-allowed"/>
+        <div class="edit-2col">
+          <div><label>Calorie Goal</label><input type="number" id="ep-cal" value="{{ user.calorie_goal }}"/></div>
+          <div><label>Protein Goal (g)</label><input type="number" id="ep-pro" value="{{ user.protein_goal }}"/></div>
+        </div>
+        <div class="edit-2col">
+          <div><label>Weight (kg)</label><input type="number" id="ep-w" value="{{ user.weight }}" step="0.1"/></div>
+          <div><label>Height (cm)</label><input type="number" id="ep-h" value="{{ user.height }}"/></div>
+        </div>
+        <div class="edit-2col">
+          <div><label>Age</label><input type="number" id="ep-age" value="{{ user.age }}"/></div>
+          <div><label>Gender</label>
+            <select id="ep-gender">
+              <option value="male" {% if user.gender=='male' %}selected{% endif %}>Male</option>
+              <option value="female" {% if user.gender=='female' %}selected{% endif %}>Female</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;border:1px solid #fde8e8;">
+      <div class="card-title" style="color:#c0392b;">⚠️ Account</div>
+      <p style="font-size:0.85rem;color:var(--light);margin-bottom:1rem">Log out of NutriPlan on this device.</p>
+      <a href="/logout" class="btn btn-danger" style="width:100%;justify-content:center">Log Out</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function saveProfile(){
+  const d={
+    name:document.getElementById('ep-name').value,
+    calorie_goal:parseInt(document.getElementById('ep-cal').value)||2000,
+    protein_goal:parseInt(document.getElementById('ep-pro').value)||150,
+    weight:parseFloat(document.getElementById('ep-w').value)||70,
+    height:parseFloat(document.getElementById('ep-h').value)||170,
+    age:parseInt(document.getElementById('ep-age').value)||25,
+    gender:document.getElementById('ep-gender').value
+  };
+  fetch('/api/save_profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
+  .then(()=>{showToast('✅ Profile updated!');setTimeout(()=>location.reload(),1500);});
+}
+</script>
+{% endblock %}

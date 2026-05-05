@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}NutriPlan — Your Personal Diet Coach{% endblock %}
+{% block extra_style %}
+<style>
+  .hero{
+    background:linear-gradient(150deg,var(--g900) 0%,var(--g800) 55%,var(--g600) 100%);
+    color:#fff;padding:6rem 2rem 7rem;text-align:center;position:relative;overflow:hidden;
+  }
+  .hero::before{content:'';position:absolute;top:-40%;left:10%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(76,175,130,0.15) 0%,transparent 70%);pointer-events:none;}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.82rem;font-weight:500;margin-bottom:1.8rem;border:1px solid rgba(255,255,255,0.15);}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.1;margin-bottom:1.2rem;max-width:700px;margin-left:auto;margin-right:auto;}
+  .hero h1 em{font-style:italic;color:#a8e0c3;}
+  .hero p{color:rgba(255,255,255,0.68);font-size:1.05rem;max-width:520px;margin:0 auto 2.5rem;line-height:1.7;}
+  .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+  .btn-hero{background:#fff;color:var(--g800);font-weight:600;padding:0.9rem 2.2rem;border-radius:50px;text-decoration:none;font-size:0.95rem;transition:all 0.2s;font-family:'Outfit',sans-serif;}
+  .btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.25);}
+  .btn-ghost{background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.3);padding:0.9rem 2rem;border-radius:50px;text-decoration:none;font-size:0.95rem;transition:all 0.2s;font-family:'Outfit',sans-serif;}
+  .btn-ghost:hover{background:rgba(255,255,255,0.18);}
+
+  .stats{background:var(--white);border-bottom:1px solid var(--sand3);display:flex;justify-content:center;gap:5rem;padding:1.5rem 2rem;flex-wrap:wrap;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--g600);}
+  .stat-lbl{font-size:0.78rem;color:var(--light);margin-top:2px;}
+
+  .section{padding:5rem 2rem;max-width:1100px;margin:0 auto;}
+  .section-badge{text-align:center;font-size:0.75rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--g600);margin-bottom:0.7rem;}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.7rem);text-align:center;margin-bottom:0.7rem;}
+  .section-sub{text-align:center;color:var(--light);max-width:460px;margin:0 auto 3.5rem;line-height:1.7;font-size:0.9rem;}
+
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;}
+  .feat-card{background:var(--white);border:1px solid var(--sand3);border-radius:var(--r);padding:1.8rem;transition:transform 0.2s,box-shadow 0.2s;}
+  .feat-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.07);}
+  .feat-icon{width:50px;height:50px;background:var(--g50);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1.1rem;}
+  .feat-card h3{font-size:1rem;font-weight:600;margin-bottom:0.45rem;}
+  .feat-card p{color:var(--light);font-size:0.87rem;line-height:1.6;}
+
+  .dark-section{background:var(--g900);padding:5rem 2rem;color:#fff;}
+  .dark-section .section-title{color:#fff;}
+  .dark-section .section-sub{color:rgba(255,255,255,0.55);}
+  .meals-row{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;max-width:900px;margin:0 auto;}
+  .meal-chip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:1rem 1.2rem;text-align:center;min-width:150px;transition:background 0.2s;}
+  .meal-chip:hover{background:rgba(255,255,255,0.14);}
+  .meal-chip .e{font-size:1.9rem;margin-bottom:0.5rem;}
+  .meal-chip .n{font-size:0.85rem;font-weight:500;margin-bottom:2px;}
+  .meal-chip .c{font-size:0.75rem;color:rgba(255,255,255,0.5);}
+
+  .cta{padding:6rem 2rem;text-align:center;}
+  .cta-inner{background:var(--g600);border-radius:24px;padding:4rem 2rem;max-width:680px;margin:0 auto;color:#fff;}
+  .cta-inner h2{font-family:'Playfair Display',serif;font-size:2.1rem;margin-bottom:0.8rem;}
+  .cta-inner p{color:rgba(255,255,255,0.7);margin-bottom:2rem;font-size:0.92rem;}
+
+  footer{background:var(--g900);color:rgba(255,255,255,0.45);text-align:center;padding:2rem;font-size:0.82rem;}
+  footer strong{color:rgba(255,255,255,0.8);}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-badge">🌿 Nutrition Tracking Made Simple</div>
+  <h1>Eat Better, <em>Live Better</em>, Feel Amazing</h1>
+  <p>Log meals, track macros, plan your week and calculate BMI — all saved to your personal account.</p>
+  <div class="hero-btns">
+    {% if logged_in %}
+    <a href="/dashboard" class="btn-hero">Go to Dashboard →</a>
+    {% else %}
+    <a href="/signup" class="btn-hero">Get Started Free →</a>
+    <a href="/login" class="btn-ghost">Log In</a>
+    {% endif %}
+  </div>
+</section>
+
+<div class="stats">
+  <div style="text-align:center"><div class="stat-num">20+</div><div class="stat-lbl">Curated meals</div></div>
+  <div style="text-align:center"><div class="stat-num">4</div><div class="stat-lbl">Meal categories</div></div>
+  <div style="text-align:center"><div class="stat-num">BMI</div><div class="stat-lbl">Instant calculator</div></div>
+  <div style="text-align:center"><div class="stat-num">100%</div><div class="stat-lbl">Free to use</div></div>
+</div>
+
+<section class="section">
+  <div class="section-badge">Everything You Need</div>
+  <h2 class="section-title">Your Complete Nutrition Toolkit</h2>
+  <p class="section-sub">From daily meal logging to personalized goal setting, all saved to your personal account.</p>
+  <div class="feat-grid">
+    <div class="feat-card"><div class="feat-icon">🔐</div><h3>Personal Account</h3><p>Your data is saved to your account. Log in from any device and pick up where you left off.</p></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><h3>Calorie Dashboard</h3><p>Real-time tracking with beautiful progress bars for calories, protein, carbs and fat.</p></div>
+    <div class="feat-card"><div class="feat-icon">🥗</div><h3>Meal Logger</h3><p>Log breakfast, lunch, dinner and snacks from our curated database with one click.</p></div>
+    <div class="feat-card"><div class="feat-icon">📅</div><h3>Meal Planner</h3><p>Auto-generate a nutritious 7-day meal plan tailored to your calorie goals.</p></div>
+    <div class="feat-card"><div class="feat-icon">⚖️</div><h3>BMI Calculator</h3><p>Instantly know your BMI and get your personalized daily calorie target (TDEE).</p></div>
+    <div class="feat-card"><div class="feat-icon">📈</div><h3>Progress History</h3><p>View your calorie history across past days to spot trends and stay on track.</p></div>
+  </div>
+</section>
+
+<div class="dark-section">
+  <div class="section-badge" style="color:#a8e0c3">Sample Meals</div>
+  <h2 class="section-title">Delicious &amp; Healthy Options</h2>
+  <p class="section-sub">Hand-picked meals across all categories with accurate nutrition data.</p>
+  <div class="meals-row">
+    <div class="meal-chip"><div class="e">🥣</div><div class="n">Oatmeal & Berries</div><div class="c">320 kcal</div></div>
+    <div class="meal-chip"><div class="e">🥗</div><div class="n">Chicken Salad</div><div class="c">420 kcal</div></div>
+    <div class="meal-chip"><div class="e">🐟</div><div class="n">Baked Salmon</div><div class="c">520 kcal</div></div>
+    <div class="meal-chip"><div class="e">🥜</div><div class="n">Mixed Nuts</div><div class="c">180 kcal</div></div>
+    <div class="meal-chip"><div class="e">🍲</div><div class="n">Quinoa Bowl</div><div class="c">480 kcal</div></div>
+  </div>
+</div>
+
+<section class="cta">
+  <div class="cta-inner">
+    <h2>Ready to Transform Your Diet?</h2>
+    <p>Create your free account and start tracking in under 30 seconds. No credit card needed.</p>
+    {% if logged_in %}
+    <a href="/dashboard" class="btn-hero">Open My Dashboard →</a>
+    {% else %}
+    <a href="/signup" class="btn-hero">Sign Up Free →</a>
+    {% endif %}
+  </div>
+</section>
+
+<footer>Built with 💚 using <strong>Python Flask + SQLite</strong> · NutriPlan 2024</footer>
+{% endblock %}

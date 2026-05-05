@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — NutriPlan{% endblock %}
+{% block extra_style %}
+<style>
+  .dash-top{background:var(--g900);color:#fff;padding:2.2rem 2rem 3rem;}
+  .dash-top-inner{max-width:1100px;margin:0 auto;padding:0 0.5rem;}
+  .dash-top h1{font-family:'Playfair Display',serif;font-size:1.85rem;margin-bottom:0.3rem;}
+  .dash-top p{color:rgba(255,255,255,0.55);font-size:0.88rem;}
+
+  .dash-body{max-width:1100px;margin:-1.5rem auto 0;padding:0 1.5rem 3rem;display:grid;grid-template-columns:1fr 330px;gap:1.5rem;}
+
+  .macro-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+  .mc{background:var(--white);border:1px solid var(--sand3);border-radius:14px;padding:1.2rem;text-align:center;}
+  .mc-label{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--light);margin-bottom:0.4rem;}
+  .mc-val{font-family:'Playfair Display',serif;font-size:1.85rem;color:var(--text);}
+  .mc-unit{font-size:0.74rem;color:var(--light);}
+  .mc.cals .mc-val{color:var(--g600);}
+
+  .goal-bar{margin-bottom:0.9rem;}
+  .goal-bar-top{display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:5px;}
+  .goal-bar-top .lbl{font-weight:500;}
+  .goal-bar-top .val{color:var(--light);}
+  .bar-track{background:var(--sand2);border-radius:8px;height:8px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:8px;transition:width 0.6s ease;}
+  .bar-g{background:var(--g400);}
+  .bar-a{background:#f5a623;}
+  .bar-b{background:#5ab0d8;}
+  .bar-red{background:#e24b4a;}
+
+  .day-sec-title{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:var(--light);margin:1.3rem 0 0.6rem;display:flex;align-items:center;gap:8px;}
+  .day-sec-title::after{content:'';flex:1;height:1px;background:var(--sand3);}
+
+  .log-item{display:flex;align-items:center;gap:12px;padding:0.8rem;border-radius:12px;border:1px solid var(--sand3);margin-bottom:0.5rem;background:var(--white);transition:box-shadow 0.2s;}
+  .log-item:hover{box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+  .li-emoji{font-size:1.55rem;width:38px;text-align:center;}
+  .li-info{flex:1;}
+  .li-name{font-weight:500;font-size:0.88rem;}
+  .li-time{font-size:0.75rem;color:var(--light);}
+  .li-cal{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--g600);}
+  .li-del{background:none;border:none;cursor:pointer;color:var(--light);font-size:0.9rem;padding:4px 8px;border-radius:6px;transition:all 0.15s;}
+  .li-del:hover{background:#fde8e8;color:#c0392b;}
+
+  .empty{text-align:center;padding:2.5rem 1rem;color:var(--light);}
+  .empty .e{font-size:2.5rem;margin-bottom:0.5rem;}
+
+  /* SIDE */
+  .side{display:flex;flex-direction:column;gap:1.5rem;}
+  .tab-row{display:flex;gap:3px;background:var(--sand2);border-radius:10px;padding:4px;margin-bottom:1rem;}
+  .tab-btn{flex:1;padding:0.38rem 0.3rem;border:none;background:none;border-radius:8px;font-size:0.72rem;font-weight:600;cursor:pointer;color:var(--mid);transition:all 0.2s;font-family:'Outfit',sans-serif;}
+  .tab-btn.active{background:var(--white);color:var(--g600);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+  .m-opt{display:flex;align-items:center;gap:10px;padding:0.65rem;border-radius:10px;border:1px solid var(--sand3);margin-bottom:0.45rem;background:var(--white);transition:all 0.15s;}
+  .m-opt:hover{border-color:var(--g400);background:var(--g50);}
+  .m-opt .oe{font-size:1.2rem;}
+  .m-opt .oi{flex:1;}
+  .m-opt .on{font-size:0.83rem;font-weight:500;}
+  .m-opt .oc{font-size:0.73rem;color:var(--light);}
+  .m-opt .oa{background:var(--g600);color:#fff;border:none;border-radius:6px;padding:3px 9px;font-size:0.73rem;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;transition:background 0.15s;}
+  .m-opt .oa:hover{background:var(--g800);}
+
+  .pf-form input,.pf-form select{
+    width:100%;padding:0.6rem 0.9rem;border:1.5px solid var(--sand3);border-radius:8px;
+    font-family:'Outfit',sans-serif;font-size:0.85rem;margin-bottom:0.65rem;
+    outline:none;background:var(--sand);transition:border-color 0.2s;
+  }
+  .pf-form input:focus,.pf-form select:focus{border-color:var(--g400);background:var(--white);}
+  .pf-form label{font-size:0.77rem;font-weight:500;color:var(--mid);display:block;margin-bottom:3px;}
+  .pf-row{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;}
+
+  @media(max-width:800px){.dash-body{grid-template-columns:1fr;}.macro-row{grid-template-columns:repeat(2,1fr);}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-top">
+  <div class="dash-top-inner">
+    <h1>Good day, {{ user.name }} 👋</h1>
+    <p>{{ today }} · Here's your nutrition summary for today</p>
+  </div>
+</div>
+
+<div class="dash-body">
+  <div>
+    <div class="macro-row">
+      <div class="mc cals"><div class="mc-label">Calories</div><div class="mc-val" id="d-cal">{{ total_calories }}</div><div class="mc-unit">/ {{ user.calorie_goal }} kcal</div></div>
+      <div class="mc"><div class="mc-label">Protein</div><div class="mc-val" id="d-pro">{{ total_protein }}</div><div class="mc-unit">/ {{ user.protein_goal }}g</div></div>
+      <div class="mc"><div class="mc-label">Carbs</div><div class="mc-val" id="d-carbs">{{ total_carbs }}</div><div class="mc-unit">grams</div></div>
+      <div class="mc"><div class="mc-label">Fat</div><div class="mc-val" id="d-fat">{{ total_fat }}</div><div class="mc-unit">grams</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      {% set cp = [((total_calories/user.calorie_goal)*100)|int,100]|min %}
+      {% set pp = [((total_protein/user.protein_goal)*100)|int,100]|min %}
+      <div class="goal-bar">
+        <div class="goal-bar-top"><span class="lbl">🔥 Calories</span><span class="val" id="bt-cal">{{ total_calories }} / {{ user.calorie_goal }} kcal</span></div>
+        <div class="bar-track"><div class="bar-fill {% if total_calories > user.calorie_goal %}bar-red{% else %}bar-g{% endif %}" id="bf-cal" style="width:{{ cp }}%"></div></div>
+      </div>
+      <div class="goal-bar">
+        <div class="goal-bar-top"><span class="lbl">💪 Protein</span><span class="val" id="bt-pro">{{ total_protein }}g / {{ user.protein_goal }}g</span></div>
+        <div class="bar-track"><div class="bar-fill bar-a" id="bf-pro" style="width:{{ pp }}%"></div></div>
+      </div>
+      <div class="goal-bar" style="margin-bottom:0">
+        <div class="goal-bar-top"><span class="lbl">🍞 Carbs</span><span class="val" id="bt-carbs">{{ total_carbs }}g today</span></div>
+        <div class="bar-track"><div class="bar-fill bar-b" id="bf-carbs" style="width:60%"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Today's Meals</div>
+      <div id="log-container">
+        {% set cats = [('breakfast','🌅'),('lunch','☀️'),('dinner','🌙'),('snack','🍎')] %}
+        {% set has_any = namespace(v=false) %}
+        {% for cat,ico in cats %}
+          {% set meals = today_logs | selectattr('meal_type','equalto',cat) | list %}
+          {% if meals %}
+            {% set has_any.v = true %}
+            <div class="day-sec-title">{{ ico }} {{ cat|capitalize }}</div>
+            {% for m in meals %}
+            <div class="log-item" id="li-{{ m['id'] }}">
+              <div class="li-emoji">{{ m['emoji'] }}</div>
+              <div class="li-info">
+                <div class="li-name">{{ m['meal_name'] }}</div>
+                <div class="li-time">Logged at {{ m['logged_at'] }}</div>
+              </div>
+              <div class="li-cal">{{ m['calories'] }} kcal</div>
+              <button class="li-del" onclick="removeMeal({{ m['id'] }})">✕</button>
+            </div>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        {% if not has_any.v %}
+        <div class="empty" id="empty-state">
+          <div class="e">🍽️</div>
+          <p>No meals logged yet today.</p>
+          <p style="font-size:0.82rem;margin-top:4px">Add your first meal using the panel →</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="card">
+      <div class="card-title">➕ Log a Meal</div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'breakfast')">🌅 Bfast</button>
+        <button class="tab-btn" onclick="switchTab(this,'lunch')">☀️ Lunch</button>
+        <button class="tab-btn" onclick="switchTab(this,'dinner')">🌙 Dinner</button>
+        <button class="tab-btn" onclick="switchTab(this,'snack')">🍎 Snack</button>
+      </div>
+      <div id="meal-opts">
+        {% for m in meal_database['breakfast'] %}
+        <div class="m-opt">
+          <span class="oe">{{ m.emoji }}</span>
+          <div class="oi"><div class="on">{{ m.name }}</div><div class="oc">{{ m.calories }} kcal · {{ m.protein }}g protein</div></div>
+          <button class="oa" onclick='logMeal({{ m|tojson }},"breakfast")'>Add</button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ My Goals</div>
+      <div class="pf-form">
+        <label>Name</label>
+        <input type="text" id="pf-name" value="{{ user.name }}"/>
+        <div class="pf-row">
+          <div><label>Calorie Goal</label><input type="number" id="pf-cal" value="{{ user.calorie_goal }}"/></div>
+          <div><label>Protein Goal (g)</label><input type="number" id="pf-pro" value="{{ user.protein_goal }}"/></div>
+        </div>
+        <div class="pf-row">
+          <div><label>Weight (kg)</label><input type="number" id="pf-w" value="{{ user.weight }}"/></div>
+          <div><label>Height (cm)</label><input type="number" id="pf-h" value="{{ user.height }}"/></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.2rem" onclick="saveGoals()">Save Goals</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const mealDB={{ meal_database|tojson }};
+let calGoal={{ user.calorie_goal }},proGoal={{ user.protein_goal }};
+let totCal={{ total_calories }},totPro={{ total_protein }},totCarbs={{ total_carbs }},totFat={{ total_fat }};
+
+function switchTab(btn,type){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('meal-opts').innerHTML=mealDB[type].map(m=>`
+    <div class="m-opt">
+      <span class="oe">${m.emoji}</span>
+      <div class="oi"><div class="on">${m.name}</div><div class="oc">${m.calories} kcal · ${m.protein}g protein</div></div>
+      <button class="oa" onclick='logMeal(${JSON.stringify(m)},"${type}")'>Add</button>
+    </div>`).join('');
+}
+
+function logMeal(m,type){
+  m.meal_type=type;
+  fetch('/api/log_meal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)})
+  .then(r=>r.json()).then(d=>{
+    if(d.success){
+      totCal+=m.calories;totPro+=m.protein;totCarbs+=m.carbs;totFat+=m.fat;
+      updateStats();appendMealDOM(m,type,d.id);
+      showToast(`${m.emoji} ${m.name} logged!`);
+    }
+  });
+}
+
+function updateStats(){
+  document.getElementById('d-cal').textContent=totCal;
+  document.getElementById('d-pro').textContent=totPro;
+  document.getElementById('d-carbs').textContent=totCarbs;
+  document.getElementById('d-fat').textContent=totFat;
+  const cp=Math.min((totCal/calGoal)*100,100);
+  const pp=Math.min((totPro/proGoal)*100,100);
+  const bc=document.getElementById('bf-cal');
+  bc.style.width=cp+'%';bc.className='bar-fill '+(totCal>calGoal?'bar-red':'bar-g');
+  document.getElementById('bf-pro').style.width=pp+'%';
+  document.getElementById('bt-cal').textContent=`${totCal} / ${calGoal} kcal`;
+  document.getElementById('bt-pro').textContent=`${totPro}g / ${proGoal}g`;
+  document.getElementById('bt-carbs').textContent=`${totCarbs}g today`;
+}
+
+function appendMealDOM(m,type,id){
+  const e=document.getElementById('empty-state');if(e)e.remove();
+  const now=new Date().toTimeString().slice(0,5);
+  const c=document.getElementById('log-container');
+  const sec=document.createElement('div');
+  sec.className='log-item';
+  sec.id='li-'+(id||Date.now());
+  sec.innerHTML=`<div class="li-emoji">${m.emoji}</div><div class="li-info"><div class="li-name">${m.name}</div><div class="li-time">Logged at ${now}</div></div><div class="li-cal">${m.calories} kcal</div><button class="li-del" onclick="removeMeal(this.closest('.log-item').id.replace('li-',''))">✕</button>`;
+  c.appendChild(sec);
+}
+
+function removeMeal(id){
+  fetch('/api/remove_meal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(id)})})
+  .then(()=>{const el=document.getElementById('li-'+id);if(el)el.remove();location.reload();});
+}
+
+function saveGoals(){
+  const d={
+    name:document.getElementById('pf-name').value,
+    calorie_goal:parseInt(document.getElementById('pf-cal').value)||2000,
+    protein_goal:parseInt(document.getElementById('pf-pro').value)||150,
+    weight:parseFloat(document.getElementById('pf-w').value)||70,
+    height:parseFloat(document.getElementById('pf-h').value)||170,
+    age:25,gender:'male'
+  };
+  calGoal=d.calorie_goal;proGoal=d.protein_goal;
+  fetch('/api/save_profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
+  .then(()=>{showToast('✅ Goals saved!');updateStats();});
+}
+</script>
+{% endblock %}

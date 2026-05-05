@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}BMI Calculator — NutriPlan{% endblock %}
+{% block extra_style %}
+<style>
+  .bmi-hero{background:var(--g900);color:#fff;padding:2.5rem 2rem;text-align:center;}
+  .bmi-hero h1{font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.4rem;}
+  .bmi-hero p{color:rgba(255,255,255,0.55);font-size:0.9rem;}
+  .bmi-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:860px;margin:2rem auto;padding:0 1.5rem;}
+  .bmi-num{font-family:'Playfair Display',serif;font-size:3.8rem;text-align:center;padding:1.5rem;border-radius:14px;margin-bottom:1rem;}
+  .bmi-u{background:#e6f1fb;color:#0c447c;} .bmi-n{background:var(--g100);color:var(--g800);}
+  .bmi-o{background:#fff3d0;color:#7a5500;} .bmi-ob{background:#fde8e8;color:#a32d2d;}
+  .bmi-cat{text-align:center;font-size:1rem;font-weight:600;margin-bottom:0.3rem;}
+  .bmi-adv{text-align:center;font-size:0.85rem;color:var(--light);line-height:1.6;margin-bottom:1.4rem;}
+  .scale{display:flex;height:10px;border-radius:8px;overflow:hidden;margin-bottom:6px;}
+  .s1{flex:1;background:#b5d4f4;}.s2{flex:1;background:var(--g400);}.s3{flex:1;background:#f5a623;}.s4{flex:1;background:#e24b4a;}
+  .slbls{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--light);margin-bottom:1.3rem;}
+  .tdee-b{background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:0.9rem 1.1rem;display:flex;align-items:center;gap:10px;}
+  .tdee-v{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--g700,#1a5432);}
+  .bmi-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-top:1.3rem;}
+  .bc{border-radius:10px;padding:0.7rem 0.4rem;text-align:center;}
+  .bc .r{font-size:0.65rem;font-weight:700;margin-bottom:2px;}
+  .bc .c{font-size:0.7rem;}
+  @media(max-width:640px){.bmi-layout{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="bmi-hero">
+  <h1>⚖️ BMI Calculator</h1>
+  <p>Calculate your Body Mass Index and daily calorie needs</p>
+</div>
+<div class="bmi-layout">
+  <div class="card">
+    <div class="card-title">📝 Enter Your Details</div>
+    <div class="form-group"><label>Weight (kg)</label><input type="number" id="bw" value="{{ user.weight or 70 }}" min="30" max="200"/></div>
+    <div class="form-group"><label>Height (cm)</label><input type="number" id="bh" value="{{ user.height or 170 }}" min="100" max="250"/></div>
+    <div class="form-group"><label>Age</label><input type="number" id="ba" value="{{ user.age or 25 }}" min="10" max="120"/></div>
+    <div class="form-group"><label>Gender</label>
+      <select id="bg">
+        <option value="male" {% if user.gender=='male' %}selected{% endif %}>Male</option>
+        <option value="female" {% if user.gender=='female' %}selected{% endif %}>Female</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.8rem" onclick="calc()">Calculate My BMI →</button>
+    <div class="bmi-cats" style="margin-top:1.2rem;">
+      <div class="bc bmi-u"><div class="r">&lt; 18.5</div><div class="c">Underweight</div></div>
+      <div class="bc bmi-n"><div class="r">18.5–24.9</div><div class="c">Normal</div></div>
+      <div class="bc bmi-o"><div class="r">25–29.9</div><div class="c">Overweight</div></div>
+      <div class="bc bmi-ob"><div class="r">≥ 30</div><div class="c">Obese</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 Your Results</div>
+    <div id="placeholder" style="text-align:center;padding:3rem 1rem;color:var(--light);">
+      <div style="font-size:3rem">⚖️</div><p style="margin-top:0.5rem">Fill in your details and click Calculate</p>
+    </div>
+    <div id="result" style="display:none">
+      <div class="bmi-num" id="r-num"></div>
+      <div class="bmi-cat" id="r-cat"></div>
+      <div class="bmi-adv" id="r-adv"></div>
+      <div class="scale"><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="s4"></div></div>
+      <div class="slbls"><span>Under</span><span>Normal</span><span>Over</span><span>Obese</span></div>
+      <div class="tdee-b"><span style="font-size:1.4rem">🔥</span><div><div style="font-size:0.76rem;color:var(--light)">Estimated Daily Calories (TDEE)</div><div class="tdee-v" id="r-tdee"></div></div></div>
+    </div>
+  </div>
+</div>
+<script>
+function calc(){
+  const w=parseFloat(document.getElementById('bw').value);
+  const h=parseFloat(document.getElementById('bh').value);
+  const a=parseInt(document.getElementById('ba').value);
+  const g=document.getElementById('bg').value;
+  if(!w||!h||!a){showToast('Please fill all fields','error');return;}
+  const hm=h/100,bmi=Math.round(w/(hm*hm)*10)/10;
+  let cat,adv,cls;
+  if(bmi<18.5){cat='Underweight';adv='Focus on nutrient-dense foods to reach a healthy weight. Increase calorie intake with healthy fats and proteins.';cls='bmi-u';}
+  else if(bmi<25){cat='Normal Weight ✓';adv='Excellent! You have a healthy BMI. Maintain your lifestyle with balanced meals and regular activity.';cls='bmi-n';}
+  else if(bmi<30){cat='Overweight';adv='Consider slightly reducing calorie intake and increasing physical activity. Focus on whole foods and vegetables.';cls='bmi-o';}
+  else{cat='Obese';adv='We recommend consulting a nutritionist for a personalised plan. Start with small, sustainable dietary changes.';cls='bmi-ob';}
+  const bmr=g==='male'?(10*w+6.25*h-5*a+5):(10*w+6.25*h-5*a-161);
+  const tdee=Math.round(bmr*1.55);
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('result').style.display='block';
+  const rn=document.getElementById('r-num');rn.textContent=bmi;rn.className='bmi-num '+cls;
+  document.getElementById('r-cat').textContent=cat;
+  document.getElementById('r-adv').textContent=adv;
+  document.getElementById('r-tdee').textContent=tdee+' kcal / day';
+}
+</script>
+{% endblock %}
